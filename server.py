@@ -8,7 +8,7 @@ import io
 app = Flask(__name__)
 CORS(app)  # allows your website to call this server
 
-model = tf.keras.models.load_model("skin_model.h5")
+model = tf.keras.models.load_model("skin_model.keras")
 
 # Your class labels — change these to match YOUR model's output
 CLASS_LABELS = ["Papule", "Pustule", "Whitehead", "Blackhead", "Cyst"]
