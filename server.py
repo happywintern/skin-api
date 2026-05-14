@@ -14,7 +14,7 @@ MODEL_PATH = "skin_model.keras"
 if not os.path.exists(MODEL_PATH):
     print("Downloading model from Google Drive...")
     gdown.download(
-        "https://drive.google.com/uc?id=YOUR_FILE_ID_HERE",
+        "https://drive.google.com/uc?id=1hkwHM6Ml1kfGWht1Jt1_KUa-yHfULiaj",
         MODEL_PATH,
         quiet=False
     )
