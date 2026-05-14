@@ -4,11 +4,23 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 import io
+import os
+import gdown
 
 app = Flask(__name__)
 CORS(app)  # allows your website to call this server
 
-model = tf.keras.models.load_model("skin_model.keras")
+MODEL_PATH = "skin_model.keras"
+if not os.path.exists(MODEL_PATH):
+    print("Downloading model from Google Drive...")
+    gdown.download(
+        "https://drive.google.com/uc?id=YOUR_FILE_ID_HERE",
+        MODEL_PATH,
+        quiet=False
+    )
+
+model = tf.keras.models.load_model(MODEL_PATH)
+print("Model loaded!")
 
 # Your class labels — change these to match YOUR model's output
 CLASS_LABELS = ["Papule", "Pustule", "Whitehead", "Blackhead", "Cyst"]
