@@ -1,0 +1,4 @@
+.venv
+models
+Training_AcneScan.ipynb
+__pycache__

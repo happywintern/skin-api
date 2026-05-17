@@ -10,7 +10,7 @@ import gdown
 app = Flask(__name__)
 CORS(app)  # allows your website to call this server
 
-MODEL_PATH = "skin_model.keras"
+MODEL_PATH = "models/skin_model.keras"
 if not os.path.exists(MODEL_PATH):
     print("Downloading model from Google Drive...")
     gdown.download(
@@ -22,52 +22,62 @@ if not os.path.exists(MODEL_PATH):
 model = tf.keras.models.load_model(MODEL_PATH)
 print("Model loaded!")
 
-# Your class labels — change these to match YOUR model's output
-CLASS_LABELS = ["Papule", "Pustule", "Whitehead", "Blackhead", "Cyst"]
+# Class labels must match the training ordering used in the notebook
+CLASS_LABELS = ["Blackheads", "Cyst", "Papules", "Pustules", "Whiteheads"]
+
+# Indonesian labels for returned prediction text
+ID_LABELS = {
+    "Blackheads": "Komedo terbuka (Blackhead)",
+    "Cyst": "Kista",
+    "Papules": "Papula",
+    "Pustules": "Pustula",
+    "Whiteheads": "Komedo tertutup (Whitehead)"
+}
+
 RECOMMENDATIONS = {
-    "Papule": {
-        "description": "Small, raised, red bumps caused by inflamed or infected hair follicles. No visible pus, but tender to touch.",
+    "Papules": {
+        "description": "Benjolan kecil berwarna merah yang disebabkan peradangan atau infeksi folikel rambut. Tidak terlihat nanah, namun terasa nyeri jika disentuh.",
         "ingredients": [
-            {"name": "Benzoyl Peroxide", "benefit": "Kills acne-causing bacteria deep in the follicle", "concentration": "2.5–5%"},
-            {"name": "Niacinamide", "benefit": "Reduces redness and calms inflammation", "concentration": "5–10%"},
-            {"name": "Azelaic Acid", "benefit": "Unclogs pores and reduces swelling", "concentration": "10–20%"},
-            {"name": "Centella Asiatica", "benefit": "Soothes irritated skin and supports healing", "concentration": "As listed"},
+            {"name": "Benzoyl Peroxide", "benefit": "Menghilangkan bakteri penyebab jerawat di dalam folikel", "concentration": "2.5–5%"},
+            {"name": "Niacinamide", "benefit": "Mengurangi kemerahan dan menenangkan peradangan", "concentration": "5–10%"},
+            {"name": "Azelaic Acid", "benefit": "Membersihkan pori-pori dan mengurangi pembengkakan", "concentration": "10–20%"},
+            {"name": "Centella Asiatica", "benefit": "Menenangkan kulit yang iritasi dan mendukung penyembuhan", "concentration": "Sesuai label produk"},
         ]
     },
-    "Pustule": {
-        "description": "Inflamed, pus-filled bumps with a white or yellow center. A more progressed form of papule with visible infection.",
+    "Pustules": {
+        "description": "Benjolan meradang berisi nanah dengan inti putih atau kekuningan. Bentuk lanjut dari papula yang menunjukkan infeksi.",
         "ingredients": [
-            {"name": "Benzoyl Peroxide", "benefit": "Eliminates bacteria causing pus buildup", "concentration": "5–10%"},
-            {"name": "Salicylic Acid", "benefit": "Exfoliates and drains blocked pores", "concentration": "0.5–2%"},
-            {"name": "Tea Tree Oil", "benefit": "Natural antibacterial to reduce infection", "concentration": "5%"},
-            {"name": "Zinc PCA", "benefit": "Controls oil and reduces bacterial activity", "concentration": "0.5–1%"},
+            {"name": "Benzoyl Peroxide", "benefit": "Mengeliminasi bakteri penyebab nanah", "concentration": "5–10%"},
+            {"name": "Salicylic Acid", "benefit": "Mengelupas dan membantu mengosongkan pori yang tersumbat", "concentration": "0.5–2%"},
+            {"name": "Tea Tree Oil", "benefit": "Antibakteri alami untuk mengurangi infeksi", "concentration": "Sekitar 5%"},
+            {"name": "Zinc PCA", "benefit": "Mengontrol minyak dan mengurangi aktivitas bakteri", "concentration": "0.5–1%"},
         ]
     },
-    "Whitehead": {
-        "description": "Closed comedones where dead skin cells and sebum are trapped beneath the skin surface, forming a small white bump.",
+    "Whiteheads": {
+        "description": "Komedo tertutup di mana sel kulit mati dan sebum terperangkap di bawah permukaan kulit, membentuk benjolan kecil berwarna putih.",
         "ingredients": [
-            {"name": "Retinol", "benefit": "Speeds up cell turnover to prevent pore blockage", "concentration": "0.1–0.3% (start low)"},
-            {"name": "Salicylic Acid", "benefit": "Penetrates and dissolves the clog inside the pore", "concentration": "1–2%"},
-            {"name": "Glycolic Acid", "benefit": "Surface exfoliant that loosens dead skin buildup", "concentration": "5–10%"},
-            {"name": "Niacinamide", "benefit": "Minimizes pore appearance and regulates sebum", "concentration": "5%"},
+            {"name": "Retinol", "benefit": "Mempercepat pergantian sel untuk mencegah penyumbatan pori", "concentration": "0.1–0.3% (mulai dari dosis rendah)"},
+            {"name": "Salicylic Acid", "benefit": "Menembus dan melarutkan sumbatan di dalam pori", "concentration": "1–2%"},
+            {"name": "Glycolic Acid", "benefit": "Eksfoliasi permukaan yang melonggarkan penumpukan sel kulit mati", "concentration": "5–10%"},
+            {"name": "Niacinamide", "benefit": "Memperkecil tampilan pori dan mengatur produksi sebum", "concentration": "Sekitar 5%"},
         ]
     },
-    "Blackhead": {
-        "description": "Open comedones where the clogged pore is exposed to air, oxidizing the sebum and turning it dark or black.",
+    "Blackheads": {
+        "description": "Komedo terbuka di mana pori yang tersumbat terekspos ke udara sehingga sebum mengalami oksidasi dan berubah gelap/hitam.",
         "ingredients": [
-            {"name": "Salicylic Acid", "benefit": "Oil-soluble — gets inside pores and dissolves buildup", "concentration": "1–2%"},
-            {"name": "Niacinamide", "benefit": "Tightens pores and reduces excess oil production", "concentration": "5–10%"},
-            {"name": "AHA (Glycolic/Lactic Acid)", "benefit": "Removes dead skin cells that contribute to clogs", "concentration": "5–10%"},
-            {"name": "Retinol", "benefit": "Prevents future blackheads by regulating cell turnover", "concentration": "0.1–0.5%"},
+            {"name": "Salicylic Acid", "benefit": "Larut dalam minyak — masuk ke pori dan melarutkan penumpukan", "concentration": "1–2%"},
+            {"name": "Niacinamide", "benefit": "Merapikan pori dan mengurangi produksi minyak berlebih", "concentration": "5–10%"},
+            {"name": "AHA (Glycolic/Lactic Acid)", "benefit": "Mengangkat sel kulit mati yang menyumbat pori", "concentration": "5–10%"},
+            {"name": "Retinol", "benefit": "Mencegah blackhead baru dengan mengatur pergantian sel", "concentration": "0.1–0.5%"},
         ]
     },
     "Cyst": {
-        "description": "Deep, painful, fluid-filled lumps beneath the skin surface. The most severe form of acne — prone to scarring if untreated.",
+        "description": "Benjolan dalam yang nyeri berisi cairan di bawah permukaan kulit. Bentuk jerawat paling parah dan berisiko meninggalkan bekas jika tidak diobati.",
         "ingredients": [
-            {"name": "Azelaic Acid", "benefit": "Reduces deep inflammation and prevents scarring", "concentration": "15–20%"},
-            {"name": "Niacinamide", "benefit": "Calms severe redness and strengthens skin barrier", "concentration": "10%"},
-            {"name": "Centella Asiatica", "benefit": "Promotes wound healing and reduces post-acne marks", "concentration": "As listed"},
-            {"name": "Retinol", "benefit": "Prevents new cysts by keeping pores clear", "concentration": "0.1–0.3% (use carefully)"},
+            {"name": "Azelaic Acid", "benefit": "Mengurangi peradangan dalam dan mencegah jaringan parut", "concentration": "15–20%"},
+            {"name": "Niacinamide", "benefit": "Menenangkan kemerahan yang parah dan memperkuat barrier kulit", "concentration": "Sekitar 10%"},
+            {"name": "Centella Asiatica", "benefit": "Mendukung penyembuhan luka dan mengurangi bekas pasca-jerawat", "concentration": "Sesuai label produk"},
+            {"name": "Retinol", "benefit": "Mencegah pembentukan kista baru dengan menjaga pori tetap bersih", "concentration": "0.1–0.3% (gunakan hati-hati)"},
         ]
     },
 }
@@ -82,24 +92,28 @@ def predict():
 
     file = request.files["image"]
     img = Image.open(io.BytesIO(file.read())).convert("RGB")
-    img = img.resize((150, 150))  # adjust size if your model uses different input
+    img = img.resize((150, 150))
 
-    img_array = np.array(img) / 255.0
+    # Preprocess the image the same way as in training (EfficientNet)
+    img_array = tf.keras.preprocessing.image.img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
+    img_array = tf.keras.applications.efficientnet.preprocess_input(img_array.astype("float32"))
 
     predictions = model.predict(img_array)[0]
     top_index = int(np.argmax(predictions))
     confidence = float(predictions[top_index]) * 100
 
     condition = CLASS_LABELS[top_index]
-    rec = RECOMMENDATIONS[condition]
+    rec = RECOMMENDATIONS.get(condition, {})
+    # Return Indonesian-friendly condition label
+    condition_id = ID_LABELS.get(condition, condition)
 
     return jsonify({
-        "condition": condition,
+        "condition": condition_id,
         "confidence": round(confidence, 1),
-        "description": rec["description"],
-        "ingredients": rec["ingredients"]
+        "description": rec.get("description", ""),
+        "ingredients": rec.get("ingredients", [])
     })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="127.0.0.1", port=8001)
