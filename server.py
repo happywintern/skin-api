@@ -11,6 +11,9 @@ app = Flask(__name__)
 CORS(app)  # allows your website to call this server
 
 MODEL_PATH = "models/skin_model.keras"
+# Ensure models directory exists
+os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+
 if not os.path.exists(MODEL_PATH):
     print("Downloading model from Google Drive...")
     gdown.download(
