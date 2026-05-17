@@ -10,7 +10,7 @@ import gdown
 app = Flask(__name__)
 CORS(app)  # allows your website to call this server
 
-MODEL_PATH = "models/skin_model.keras"
+MODEL_PATH = "skin_model.keras"
 # Ensure models directory exists
 os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
 
