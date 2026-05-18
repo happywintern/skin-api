@@ -10,14 +10,14 @@ import gdown
 app = Flask(__name__)
 CORS(app)  # allows your website to call this server
 
-MODEL_PATH = "skin_model.keras"
+MODEL_PATH = "models/skin_model.keras"
 # Ensure models directory exists
 os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
 
 if not os.path.exists(MODEL_PATH):
     print("Downloading model from Google Drive...")
     gdown.download(
-        "https://drive.google.com/uc?id=1hkwHM6Ml1kfGWht1Jt1_KUa-yHfULiaj",
+        "https://drive.google.com/uc?id=15onwsUuq_N0XQywNOS_3ERuKedEDUnF_",
         MODEL_PATH,
         quiet=False
     )
@@ -26,12 +26,13 @@ model = tf.keras.models.load_model(MODEL_PATH)
 print("Model loaded!")
 
 # Class labels must match the training ordering used in the notebook
-CLASS_LABELS = ["Blackheads", "Cyst", "Papules", "Pustules", "Whiteheads"]
+CLASS_LABELS = ['Blackheads', 'Cyst','Dark Spot', 'Papules', 'Pustules', 'Whiteheads']
 
 # Indonesian labels for returned prediction text
 ID_LABELS = {
     "Blackheads": "Komedo terbuka (Blackhead)",
     "Cyst": "Kista",
+    "Dark Spot" : "Flek Hitam",
     "Papules": "Papula",
     "Pustules": "Pustula",
     "Whiteheads": "Komedo tertutup (Whitehead)"
@@ -65,6 +66,17 @@ RECOMMENDATIONS = {
             {"name": "Niacinamide", "benefit": "Memperkecil tampilan pori dan mengatur produksi sebum", "concentration": "Sekitar 5%"},
         ]
     },
+
+    "Dark Spot": {
+        "description": "Hiperpigmentasi yang muncul akibat produksi melanin berlebih, sering disebabkan oleh paparan sinar matahari, bekas jerawat, atau perubahan hormonal.",
+        "ingredients": [
+            {"name": "Niacinamide", "benefit": "Menghambat transfer melanin ke permukaan kulit dan mencerahkan bekas flek", "concentration": "5–10%"},
+            {"name": "Alpha Arbutin", "benefit": "Mengurangi produksi melanin secara efektif tanpa iritasi", "concentration": "1–2%"},
+            {"name": "Vitamin C (Ascorbic Acid)", "benefit": "Antioksidan kuat yang mencerahkan dan mencegah pembentukan flek baru", "concentration": "10–20%"},
+            {"name": "Tranexamic Acid", "benefit": "Memudarkan hiperpigmentasi membandel dan meratakan warna kulit", "concentration": "2–5%"},
+        ]
+    },
+    
     "Blackheads": {
         "description": "Komedo terbuka di mana pori yang tersumbat terekspos ke udara sehingga sebum mengalami oksidasi dan berubah gelap/hitam.",
         "ingredients": [
@@ -83,6 +95,8 @@ RECOMMENDATIONS = {
             {"name": "Retinol", "benefit": "Mencegah pembentukan kista baru dengan menjaga pori tetap bersih", "concentration": "0.1–0.3% (gunakan hati-hati)"},
         ]
     },
+    
+    
 }
 @app.route("/", methods=["GET"])
 def health():
