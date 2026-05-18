@@ -117,20 +117,42 @@ def predict():
     img_array = tf.keras.applications.efficientnet.preprocess_input(img_array.astype("float32"))
 
     predictions = model.predict(img_array)[0]
-    top_index = int(np.argmax(predictions))
-    confidence = float(predictions[top_index]) * 100
+    # Get top-3 predictions
+    top_idxs = list(np.argsort(predictions)[-3:][::-1])
+    top3 = []
+    for i in top_idxs:
+        top3.append({
+            "label": CLASS_LABELS[i],
+            "confidence": float(predictions[i]) * 100,
+        })
+
+    top_index = int(top_idxs[0])
+    top_conf = float(predictions[top_index]) * 100
+
+    # Threshold logic: <50% invalid, <65% uncertain, else ok
+    if top_conf < 50.0:
+        status = "invalid"
+    elif top_conf < 65.0:
+        status = "uncertain"
+    else:
+        status = "ok"
 
     condition = CLASS_LABELS[top_index]
     rec = RECOMMENDATIONS.get(condition, {})
-    # Return Indonesian-friendly condition label
+    # Indonesian-friendly condition label for top prediction
     condition_id = ID_LABELS.get(condition, condition)
 
-    return jsonify({
-        "condition": condition_id,
-        "confidence": round(confidence, 1),
-        "description": rec.get("description", ""),
-        "ingredients": rec.get("ingredients", [])
-    })
+    resp = {"status": status, "top3": [{"label": ID_LABELS.get(t["label"], t["label"]), "confidence": round(t["confidence"], 1)} for t in top3]}
+
+    if status == "ok" or status == "uncertain":
+        resp.update({
+            "condition": condition_id,
+            "confidence": round(top_conf, 1),
+            "description": rec.get("description", ""),
+            "ingredients": rec.get("ingredients", []),
+        })
+
+    return jsonify(resp)
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8001)
