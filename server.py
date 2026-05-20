@@ -31,7 +31,7 @@ CLASS_LABELS = ['Blackheads', 'Cyst','Dark Spot', 'Papules', 'Pustules', 'Whiteh
 # Indonesian labels for returned prediction text
 ID_LABELS = {
     "Blackheads": "Komedo terbuka (Blackhead)",
-    "Cyst": "Kista",
+    "Cyst": "Kistik",
     "Dark Spot" : "Flek Hitam",
     "Papules": "Papula",
     "Pustules": "Pustula",
@@ -92,7 +92,7 @@ RECOMMENDATIONS = {
             {"name": "Azelaic Acid", "benefit": "Mengurangi peradangan dalam dan mencegah jaringan parut", "concentration": "15–20%"},
             {"name": "Niacinamide", "benefit": "Menenangkan kemerahan yang parah dan memperkuat barrier kulit", "concentration": "Sekitar 10%"},
             {"name": "Centella Asiatica", "benefit": "Mendukung penyembuhan luka dan mengurangi bekas pasca-jerawat", "concentration": "Sesuai label produk"},
-            {"name": "Retinol", "benefit": "Mencegah pembentukan kista baru dengan menjaga pori tetap bersih", "concentration": "0.1–0.3% (gunakan hati-hati)"},
+            {"name": "Retinol", "benefit": "Mencegah pembentukan kistik baru dengan menjaga pori tetap bersih", "concentration": "0.1–0.3% (gunakan hati-hati)"},
         ]
     },
     
