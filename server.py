@@ -109,7 +109,7 @@ def predict():
 
     file = request.files["image"]
     img = Image.open(io.BytesIO(file.read())).convert("RGB")
-    img = img.resize((150, 150))
+    img = img.resize((224, 224))
 
     # Preprocess the image the same way as in training (EfficientNet)
     img_array = tf.keras.preprocessing.image.img_to_array(img)
